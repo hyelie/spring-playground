@@ -1,0 +1,2 @@
+/env/mysql/volume/**/*.*
+/env/mysql/volume/*

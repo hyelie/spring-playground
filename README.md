@@ -15,7 +15,6 @@ sudo apt install openjdk-17-jdk
 ```
 
 #### Docker, Docker-Compose
-### Install docker and docker-compose
 ```
 # install docker 
 sudo apt-get update && sudo apt-get upgrade
