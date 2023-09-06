@@ -22,19 +22,21 @@ import com.playground.spring.fromSubqueryExample.entity.Consumption;
 import com.playground.spring.fromSubqueryExample.entity.Coordinate;
 import com.playground.spring.fromSubqueryExample.repository.ConsumptionRepository;
 import com.playground.spring.fromSubqueryExample.repository.CoordinateRepository;
+import com.playground.spring.fromSubqueryExample.service.ConsumptionService;
 
 @SpringBootTest
 @Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class RepositoryPerformanceTest {
+public class PerformanceTest {
     @PersistenceContext
     private EntityManager em;
 
     @Autowired ConsumptionRepository consumptionRepository;
     @Autowired CoordinateRepository coordinateRepository;
+    @Autowired ConsumptionService consumptionService;
 
     private PageDto pageDto;
-    private Logger logger = LoggerFactory.getLogger(RepositoryPerformanceTest.class);
+    private Logger logger = LoggerFactory.getLogger(PerformanceTest.class);
     private StopWatch stopWatch;
     private List<Consumption> consumptions = new ArrayList<>();
     private List<Coordinate> coordinates = new ArrayList<>();
@@ -48,21 +50,37 @@ public class RepositoryPerformanceTest {
 
     @Test
     @Transactional
-    public void runSingleQueryBenchmark(){
+    public void benchmarkLargeQueryRepositoryTime(){
         stopWatch.start();
         List<ConsumptionCoordinateDTO> result = consumptionRepository.findComsuptionsWithCoordinatesWithPaging(pageDto);
         stopWatch.stop();
-        logger.info("Repository - runSingleQueryBenchmark - Execution Time: " + stopWatch.getTotalTimeMillis() + " ms");
+        logger.info("LargeQueryRepositoryTime - Execution Time: " + stopWatch.getTotalTimeMillis() + " ms");
     }
 
     @Test
     @Transactional
-    public void runTwoQeuryBenchmark(){
+    public void benchmarkSmallQueriesRepositoryTime(){
         stopWatch.start();
         List<Consumption> consumptions = consumptionRepository.findConsumptionsWithPaging(pageDto);
         List<Coordinate> coordinates = coordinateRepository.findCoordinatesByConsumptions(consumptions);
         stopWatch.stop();
-        logger.info("Repository - runTwoQeuryBenchmark - Execution Time: " + stopWatch.getTotalTimeMillis() + " ms");
+        logger.info("SmallQueriesRepositoryTime - Execution Time: " + stopWatch.getTotalTimeMillis() + " ms");
+    }
+
+    @Test
+    public void benchmarkLargeQueryServiceTime(){
+        stopWatch.start();
+        consumptionService.findConsumptionWithNativeQuery(pageDto);
+        stopWatch.stop();
+        logger.info("LargeQueryServiceTime - Execution Time: " + stopWatch.getTotalTimeMillis() + " ms");
+    }
+
+    @Test
+    public void benchmarkSmallQueriesServiceTime(){
+        stopWatch.start();
+        consumptionService.findConsumptionsWithTwoQuery(pageDto);
+        stopWatch.stop();
+        logger.info("SmallQueriesServiceTime - Execution Time: " + stopWatch.getTotalTimeMillis() + " ms");
     }
 
     public void generateTestData(int consumptionSize, int coordinateSize){
